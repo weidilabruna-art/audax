@@ -412,6 +412,10 @@ async function confirmChoice(){
 async function advance(){
   step++;
   updateProgress();
+
+  // ─── SALVA/ATUALIZA NO BANCO A CADA RESPOSTA ───
+  saveLeadToDatabase(data);
+
   if(step < STEPS.length){
     const next = STEPS[step];
     await botMsg(next.botMsg(data));
@@ -421,8 +425,6 @@ async function advance(){
     // Final
     document.getElementById('bottom').style.display='none';
     await botMsg(`${fn(data.nome)}, terminei de mapear seu perfil. Esse é o raio-x da sua operação hoje:`);
-    // ─── SALVAR NO BANCO ───
-    saveLeadToDatabase(data);
     renderRaioX();
   }
 }
@@ -472,24 +474,68 @@ document.getElementById('tInput').addEventListener('keydown', e=>{
   if(e.key==='Enter') handleSend();
 });
 
-// ─── DATABASE ───
-const DB_KEY = 'audax_leads';
+// ─── DATABASE (Supabase) ───
+const SUPABASE_URL = 'https://pezrbffcoairpwprhjgo.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlenJiZmZjb2FpcnB3cHJoamdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NjAxMzcsImV4cCI6MjA5MzMzNjEzN30.9-OH0Rwabum_TRIl_6hgHzPtWHp0hNwLhth3a3xNEQ8';
 
-function saveLeadToDatabase(leadData) {
+const SESSION_ID = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+let _leadRowId = null;
+
+async function saveLeadToDatabase(leadData) {
   try {
-    const raw = localStorage.getItem(DB_KEY);
-    const leads = raw ? JSON.parse(raw) : [];
-    const lead = {
-      id: Date.now(),
-      timestamp: new Date().toISOString(),
-      ...leadData
+    const payload = {
+      session_id:   SESSION_ID,
+      nome:         leadData.nome         || null,
+      whatsapp:     leadData.whatsapp     || null,
+      email:        leadData.email        || null,
+      instagram:    leadData.instagram    || null,
+      empresa:      leadData.empresa      || null,
+      segmento:     leadData.segmento     || null,
+      cargo:        leadData.cargo        || null,
+      faturamento:  leadData.faturamento  || null,
+      gargalo:      leadData.gargalo      || null,
+      investimento: leadData.investimento || null
     };
-    leads.push(lead);
-    localStorage.setItem(DB_KEY, JSON.stringify(leads));
-    console.log('[Audax DB] Lead salvo:', lead);
-    return true;
+
+    const headers = {
+      'Content-Type':  'application/json',
+      'apikey':        SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY
+    };
+
+    let res;
+
+    if (!_leadRowId) {
+      // PRIMEIRA VEZ: INSERT e guarda o id retornado
+      res = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
+        method: 'POST',
+        headers: { ...headers, 'Prefer': 'return=representation' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        const rows = await res.json();
+        if (rows && rows[0]) _leadRowId = rows[0].id;
+        console.log('[Audax DB] Lead criado', _leadRowId);
+        return true;
+      }
+    } else {
+      // ATUALIZACOES: PATCH pelo id
+      res = await fetch(`${SUPABASE_URL}/rest/v1/leads?id=eq.${_leadRowId}`, {
+        method: 'PATCH',
+        headers: { ...headers, 'Prefer': 'return=minimal' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        console.log('[Audax DB] Lead atualizado', _leadRowId);
+        return true;
+      }
+    }
+
+    const err = await res.text();
+    console.error('[Audax DB] Erro Supabase:', res.status, err);
+    return false;
   } catch(e) {
-    console.error('[Audax DB] Erro ao salvar lead:', e);
+    console.error('[Audax DB] Erro de rede:', e);
     return false;
   }
 }
