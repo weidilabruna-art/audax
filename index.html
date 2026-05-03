@@ -421,6 +421,8 @@ async function advance(){
     // Final
     document.getElementById('bottom').style.display='none';
     await botMsg(`${fn(data.nome)}, terminei de mapear seu perfil. Esse é o raio-x da sua operação hoje:`);
+    // ─── SALVAR NO BANCO ───
+    saveLeadToDatabase(data);
     renderRaioX();
   }
 }
@@ -469,6 +471,28 @@ function renderRaioX(){
 document.getElementById('tInput').addEventListener('keydown', e=>{
   if(e.key==='Enter') handleSend();
 });
+
+// ─── DATABASE ───
+const DB_KEY = 'audax_leads';
+
+function saveLeadToDatabase(leadData) {
+  try {
+    const raw = localStorage.getItem(DB_KEY);
+    const leads = raw ? JSON.parse(raw) : [];
+    const lead = {
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      ...leadData
+    };
+    leads.push(lead);
+    localStorage.setItem(DB_KEY, JSON.stringify(leads));
+    console.log('[Audax DB] Lead salvo:', lead);
+    return true;
+  } catch(e) {
+    console.error('[Audax DB] Erro ao salvar lead:', e);
+    return false;
+  }
+}
 
 // ─── INIT ───
 async function init(){
