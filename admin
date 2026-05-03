@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audax · Painel de Leads</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800;900&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --neon:#CCFF00;
+  --neon-bg:rgba(204,255,0,0.10);
+  --neon-border:rgba(204,255,0,0.25);
+  --bg:#0c0c0c;
+  --surface:#111111;
+  --card:#191919;
+  --border:#252525;
+  --text:#f2f2f2;
+  --muted:#6b6b6b;
+  --danger:#ff5c3a;
+  --success:#3dba6f;
+}
+
+html,body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;min-height:100%}
+
+/* HEADER */
+.header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 24px;background:var(--surface);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:10;
+}
+.logo{font-size:18px;font-weight:900;letter-spacing:.5px}
+.logo span{color:var(--neon)}
+.header-right{display:flex;gap:10px;align-items:center}
+
+/* STATS BAR */
+.stats-bar{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;background:var(--border);border-bottom:1px solid var(--border);
+}
+.stat{
+  background:var(--surface);padding:16px 20px;text-align:center;
+}
+.stat-v{font-size:22px;font-weight:900;color:var(--neon)}
+.stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-top:3px;font-weight:600}
+
+/* TOOLBAR */
+.toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 24px;border-bottom:1px solid var(--border);
+  background:var(--surface);flex-wrap:wrap;gap:10px;
+}
+.search-input{
+  background:var(--card);border:1.5px solid var(--border);border-radius:8px;
+  padding:9px 14px;font-size:13px;font-family:'Sora',sans-serif;
+  color:var(--text);outline:none;min-width:220px;transition:border-color .2s;
+}
+.search-input:focus{border-color:var(--neon)}
+.search-input::placeholder{color:var(--muted)}
+.toolbar-right{display:flex;gap:8px}
+
+/* BUTTONS */
+.btn{
+  padding:9px 16px;border-radius:8px;font-size:12px;font-weight:700;
+  font-family:'Sora',sans-serif;cursor:pointer;border:none;
+  text-transform:uppercase;letter-spacing:.8px;transition:all .15s;display:flex;align-items:center;gap:6px;
+}
+.btn-neon{background:var(--neon);color:#000}
+.btn-neon:hover{opacity:.88}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border)}
+.btn-ghost:hover{border-color:var(--muted);color:var(--text)}
+.btn-danger{background:transparent;color:var(--danger);border:1.5px solid var(--danger)}
+.btn-danger:hover{background:rgba(255,92,58,.1)}
+
+/* TABLE WRAPPER */
+.table-wrap{overflow-x:auto;padding:0 24px 32px}
+table{width:100%;border-collapse:collapse;margin-top:16px;min-width:900px}
+thead th{
+  text-align:left;font-size:10px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1.4px;padding:10px 12px;
+  border-bottom:1px solid var(--border);white-space:nowrap;
+}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s;cursor:pointer}
+tbody tr:hover{background:var(--surface)}
+tbody td{
+  padding:13px 12px;font-size:12.5px;color:var(--text);
+  max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+tbody td.ts{color:var(--muted);font-size:11px}
+.badge{
+  display:inline-block;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.6px;
+}
+.badge-fat-high{background:rgba(61,186,111,.15);color:#3dba6f;border:1px solid rgba(61,186,111,.3)}
+.badge-fat-mid{background:rgba(204,255,0,.10);color:var(--neon);border:1px solid var(--neon-border)}
+.badge-fat-low{background:rgba(255,92,58,.1);color:var(--danger);border:1px solid rgba(255,92,58,.3)}
+.badge-neutral{background:var(--card);color:var(--muted);border:1px solid var(--border)}
+
+/* EMPTY */
+.empty{
+  text-align:center;padding:64px 24px;color:var(--muted);
+}
+.empty-icon{font-size:40px;margin-bottom:16px}
+.empty-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px}
+.empty-sub{font-size:13px;line-height:1.6}
+
+/* MODAL */
+.overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
+  z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(4px);
+}
+.overlay.show{display:flex}
+.modal{
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:28px;width:90%;max-width:540px;max-height:90vh;overflow-y:auto;
+  animation:slideUp .25s ease;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-size:15px;font-weight:800}
+.modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-row{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.modal-row:last-of-type{border:none}
+.modal-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;min-width:110px;flex-shrink:0;padding-top:1px}
+.modal-val{font-size:13px;color:var(--text);word-break:break-word;line-height:1.5}
+.modal-actions{margin-top:18px;display:flex;gap:8px}
+.wpp-link{
+  display:flex;align-items:center;gap:8px;flex:1;padding:12px;
+  background:#25D366;color:#fff;font-size:12.5px;font-weight:800;
+  font-family:'Sora',sans-serif;text-transform:uppercase;letter-spacing:.6px;
+  border:none;border-radius:10px;cursor:pointer;text-decoration:none;
+  justify-content:center;transition:opacity .15s;
+}
+.wpp-link:hover{opacity:.9}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:24px;right:24px;background:var(--neon);color:#000;
+  font-size:12.5px;font-weight:800;padding:12px 20px;border-radius:10px;
+  z-index:999;animation:toastIn .3s ease;display:none;
+}
+.toast.show{display:block}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">AUDAX <span>·</span> Leads</div>
+  <div class="header-right">
+    <button class="btn btn-ghost" onclick="importData()">⬆ Importar JSON</button>
+    <button class="btn btn-neon" onclick="exportCSV()">⬇ Exportar CSV</button>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar" id="statsBar">
+  <div class="stat"><div class="stat-v" id="statTotal">0</div><div class="stat-l">Total de Leads</div></div>
+  <div class="stat"><div class="stat-v" id="statHoje">0</div><div class="stat-l">Hoje</div></div>
+  <div class="stat"><div class="stat-v" id="statAlto">0</div><div class="stat-l">Fat. &gt; R$100k</div></div>
+  <div class="stat"><div class="stat-v" id="statInvest">0</div><div class="stat-l">Invest. &gt; R$10k</div></div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <input class="search-input" id="searchInput" placeholder="Buscar por nome, empresa, e-mail..." oninput="renderTable()">
+  <div class="toolbar-right">
+    <button class="btn btn-ghost" onclick="exportJSON()">⬇ JSON</button>
+    <button class="btn btn-danger" onclick="clearAll()">🗑 Limpar tudo</button>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="table-wrap">
+  <div id="tableContainer"></div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Detalhes do Lead</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- HIDDEN FILE INPUT -->
+<input type="file" id="fileInput" accept=".json" style="display:none" onchange="handleImport(event)">
+
+<script>
+const DB_KEY = 'audax_leads';
+
+// ─── LOAD DATA ───
+function getLeads() {
+  try {
+    return JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+  } catch { return []; }
+}
+
+// ─── FORMAT HELPERS ───
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+}
+
+function fatBadge(v) {
+  if (!v) return `<span class="badge badge-neutral">—</span>`;
+  if (v.includes('500k') || v.includes('100k')) return `<span class="badge badge-fat-high">${v.split('/')[0].trim()}</span>`;
+  if (v.includes('30k') || v.includes('10k')) return `<span class="badge badge-fat-mid">${v.split('/')[0].trim()}</span>`;
+  return `<span class="badge badge-fat-low">${v.split('/')[0].trim()}</span>`;
+}
+
+function investBadge(v) {
+  if (!v) return `<span class="badge badge-neutral">—</span>`;
+  if (v.includes('30.000') || v.includes('Acima')) return `<span class="badge badge-fat-high">${v}</span>`;
+  if (v.includes('10.000') || v.includes('3.000')) return `<span class="badge badge-fat-mid">${v}</span>`;
+  return `<span class="badge badge-neutral">${v}</span>`;
+}
+
+// ─── STATS ───
+function updateStats(leads) {
+  const hoje = new Date().toDateString();
+  const totalHoje = leads.filter(l => new Date(l.timestamp).toDateString() === hoje).length;
+  const alto = leads.filter(l => l.faturamento && (l.faturamento.includes('500k') || l.faturamento.includes('100k'))).length;
+  const investAlto = leads.filter(l => l.investimento && (l.investimento.includes('30.000') || l.investimento.includes('Acima'))).length;
+  document.getElementById('statTotal').textContent = leads.length;
+  document.getElementById('statHoje').textContent = totalHoje;
+  document.getElementById('statAlto').textContent = alto;
+  document.getElementById('statInvest').textContent = investAlto;
+}
+
+// ─── RENDER TABLE ───
+function renderTable() {
+  const all = getLeads();
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const leads = q
+    ? all.filter(l =>
+        (l.nome||'').toLowerCase().includes(q) ||
+        (l.empresa||'').toLowerCase().includes(q) ||
+        (l.email||'').toLowerCase().includes(q) ||
+        (l.whatsapp||'').includes(q)
+      )
+    : all;
+
+  updateStats(all);
+  const container = document.getElementById('tableContainer');
+
+  if (leads.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">${all.length === 0 ? 'Nenhum lead ainda' : 'Nenhum resultado'}</div>
+        <div class="empty-sub">${all.length === 0
+          ? 'Quando alguém completar o diagnóstico no <b>index.html</b>, o lead aparece aqui automaticamente.'
+          : 'Tente buscar por outro termo.'
+        }</div>
+      </div>`;
+    return;
+  }
+
+  // Most recent first
+  const sorted = [...leads].reverse();
+
+  let rows = sorted.map((l, i) => `
+    <tr onclick="openModal(${all.indexOf(l)})">
+      <td class="ts">${fmtDate(l.timestamp)}</td>
+      <td><b>${l.nome || '—'}</b></td>
+      <td>${l.whatsapp || '—'}</td>
+      <td>${l.email || '—'}</td>
+      <td>${l.instagram || '—'}</td>
+      <td>${l.empresa || '—'}</td>
+      <td>${l.segmento ? l.segmento.split('/')[0].trim() : '—'}</td>
+      <td>${l.cargo ? l.cargo.split('/')[0].trim() : '—'}</td>
+      <td>${fatBadge(l.faturamento)}</td>
+      <td>${investBadge(l.investimento)}</td>
+    </tr>
+  `).join('');
+
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Data/Hora</th>
+          <th>Nome</th>
+          <th>WhatsApp</th>
+          <th>E-mail</th>
+          <th>Instagram</th>
+          <th>Empresa</th>
+          <th>Segmento</th>
+          <th>Cargo</th>
+          <th>Faturamento</th>
+          <th>Investimento</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+// ─── MODAL ───
+function openModal(idx) {
+  const leads = getLeads();
+  const l = leads[idx];
+  if (!l) return;
+
+  const fields = [
+    ['Data/Hora', fmtDate(l.timestamp)],
+    ['Nome', l.nome],
+    ['WhatsApp', l.whatsapp],
+    ['E-mail', l.email],
+    ['Instagram', l.instagram],
+    ['Empresa', l.empresa],
+    ['Segmento', l.segmento],
+    ['Cargo', l.cargo],
+    ['Faturamento', l.faturamento],
+    ['Maior Gargalo', l.gargalo],
+    ['Investimento/mês', l.investimento],
+  ];
+
+  document.getElementById('modalTitle').textContent = l.nome || 'Lead';
+  document.getElementById('modalBody').innerHTML = fields.map(([k, v]) =>
+    `<div class="modal-row"><span class="modal-lbl">${k}</span><span class="modal-val">${v || '—'}</span></div>`
+  ).join('');
+
+  const msg = encodeURIComponent(
+    `Olá ${l.nome || ''}! Vi que você preencheu o diagnóstico Audax.\n\n` +
+    `Empresa: ${l.empresa || ''}\nSegmento: ${l.segmento || ''}\nFaturamento: ${l.faturamento || ''}\n\n` +
+    `Gostaria de conversar sobre como podemos ajudar!`
+  );
+  const wpp = l.whatsapp ? l.whatsapp.replace(/\D/g, '') : '';
+  const countryWpp = wpp.startsWith('55') ? wpp : '55' + wpp;
+
+  document.getElementById('modalActions').innerHTML = `
+    ${wpp ? `<a class="wpp-link" href="https://wa.me/${countryWpp}?text=${msg}" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Entrar em contato no WhatsApp
+    </a>` : ''}
+    <button class="btn btn-danger" onclick="deleteLead(${idx})">🗑</button>
+  `;
+
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('overlay')) {
+    document.getElementById('overlay').classList.remove('show');
+  }
+}
+
+function deleteLead(idx) {
+  if (!confirm('Remover este lead?')) return;
+  const leads = getLeads();
+  leads.splice(idx, 1);
+  localStorage.setItem(DB_KEY, JSON.stringify(leads));
+  closeModal();
+  renderTable();
+  showToast('Lead removido.');
+}
+
+// ─── EXPORT CSV ───
+function exportCSV() {
+  const leads = getLeads();
+  if (!leads.length) { showToast('Nenhum lead para exportar.'); return; }
+  const headers = ['ID','Data','Nome','WhatsApp','Email','Instagram','Empresa','Segmento','Cargo','Faturamento','Gargalo','Investimento'];
+  const rows = leads.map(l => [
+    l.id, fmtDate(l.timestamp), l.nome, l.whatsapp, l.email, l.instagram,
+    l.empresa, l.segmento, l.cargo, l.faturamento, l.gargalo, l.investimento
+  ].map(v => `"${(v||'').replace(/"/g,'""')}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  download('audax_leads.csv', csv, 'text/csv');
+  showToast(`${leads.length} leads exportados ✓`);
+}
+
+// ─── EXPORT JSON ───
+function exportJSON() {
+  const leads = getLeads();
+  if (!leads.length) { showToast('Nenhum lead para exportar.'); return; }
+  download('audax_leads.json', JSON.stringify(leads, null, 2), 'application/json');
+  showToast(`JSON exportado ✓`);
+}
+
+// ─── IMPORT JSON ───
+function importData() {
+  document.getElementById('fileInput').click();
+}
+
+function handleImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (!Array.isArray(imported)) throw new Error('Formato inválido');
+      const existing = getLeads();
+      const existingIds = new Set(existing.map(l => l.id));
+      const newLeads = imported.filter(l => !existingIds.has(l.id));
+      const merged = [...existing, ...newLeads];
+      localStorage.setItem(DB_KEY, JSON.stringify(merged));
+      renderTable();
+      showToast(`${newLeads.length} novos leads importados ✓`);
+    } catch {
+      showToast('Arquivo inválido. Use um JSON exportado daqui.');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ─── CLEAR ALL ───
+function clearAll() {
+  const leads = getLeads();
+  if (!leads.length) { showToast('Nenhum lead para remover.'); return; }
+  if (!confirm(`Remover TODOS os ${leads.length} leads? Essa ação não pode ser desfeita.`)) return;
+  localStorage.removeItem(DB_KEY);
+  renderTable();
+  showToast('Todos os leads removidos.');
+}
+
+// ─── UTILS ───
+function download(filename, content, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type}));
+  a.download = filename;
+  a.click();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ─── KEYBOARD ───
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ─── INIT ───
+renderTable();
+
+// Auto-refresh every 30s
+setInterval(renderTable, 30000);
+</script>
+</body>
+</html>
