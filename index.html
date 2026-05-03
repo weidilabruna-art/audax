@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Diagnóstico Audax</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800;900&display=swap');
@@ -358,25 +358,34 @@ function showText(s){
 
 function showChoice(s){
   document.getElementById('textPanel').style.display='none';
-  document.getElementById('choicePanel').style.display='block';
-  document.getElementById('choiceLbl').textContent = s.lbl;
-  selectedChoice = null;
-  const confirm = document.getElementById('choiceConfirm');
-  confirm.classList.remove('show');
-  const list = document.getElementById('choiceList');
-  list.innerHTML='';
-  s.opts.forEach((opt,i)=>{
-    const el = document.createElement('div');
-    el.className='choice-opt';
-    el.innerHTML=`<div class="choice-key">${KEYS[i]}</div><span>${opt}</span><div class="choice-radio"></div>`;
-    el.onclick = ()=>{
-      list.querySelectorAll('.choice-opt').forEach(o=>o.classList.remove('selected'));
-      el.classList.add('selected');
-      selectedChoice = opt;
-      confirm.classList.add('show');
-    };
-    list.appendChild(el);
-  });
+  // Pequeno delay antes de mostrar as choices
+  setTimeout(()=>{
+    document.getElementById('choicePanel').style.display='block';
+    document.getElementById('choiceLbl').textContent = s.lbl;
+    selectedChoice = null;
+    const confirm = document.getElementById('choiceConfirm');
+    confirm.classList.remove('show');
+    const list = document.getElementById('choiceList');
+    list.innerHTML='';
+    s.opts.forEach((opt,i)=>{
+      const el = document.createElement('div');
+      el.className='choice-opt';
+      el.innerHTML=`<div class="choice-key">${KEYS[i]}</div><span>${opt}</span><div class="choice-radio"></div>`;
+      el.onclick = ()=>{
+        list.querySelectorAll('.choice-opt').forEach(o=>o.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedChoice = opt;
+        confirm.classList.add('show');
+      };
+      list.appendChild(el);
+    });
+    // Scroll suave para mostrar as choices
+    setTimeout(()=>{
+      const chat = document.getElementById('chat');
+      chat.scrollTop = chat.scrollHeight;
+      document.getElementById('choicePanel').scrollIntoView({behavior:'smooth', block:'end'});
+    }, 80);
+  }, 400);
 }
 
 // ─── SEND HANDLERS ───
