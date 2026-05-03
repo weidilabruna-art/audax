@@ -492,4 +492,23 @@ row.innerHTML = `
   </div>`;
 chat.appendChild(row);
 chat.scrollTop = chat.scrollHeight;
+
+// ─── KEYBOARD ───
+document.getElementById('tInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter') handleSend();
+});
+
+// ─── INIT ───
+async function init(){
+  updateProgress();
+  await sleep(300);
+  await botMsg(`Sou o <b>Rubens Godoy</b>, fundador da Audax — operamos tráfego pago, estrutura de marketing e processos comerciais pra empresas que querem escalar com previsibilidade.`);
+  await botMsg(`Vou te fazer algumas perguntas rápidas pra gerar um <b style="color:var(--neon)">diagnóstico personalizado</b> do seu momento. No final, você recebe um <b style="color:var(--neon)">raio-x com potencial e recomendações</b>.`);
+  await botMsg(STEPS[0].botMsg(data));
+  showText(STEPS[0]);
+}
+
+init();
 </script>
+</body>
+</html>
