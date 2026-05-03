@@ -88,7 +88,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Sora',
 .text-input-panel{padding:12px 18px 14px}
 .input-lbl{font-size:8.5px;text-transform:uppercase;letter-spacing:1.8px;color:var(--muted);margin-bottom:7px;font-weight:700}
 .input-row{display:flex;gap:8px;align-items:center}
-.t-input{flex:1;background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:12px 15px;font-size:13.5px;font-family:'Sora',sans-serif;color:var(--text);outline:none;transition:border-color .2s}
+.t-input{flex:1;background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:12px 15px;font-size:16px;font-family:'Sora',sans-serif;color:var(--text);outline:none;transition:border-color .2s;-webkit-text-size-adjust:100%;transform:scale(1)}
 .t-input:focus{border-color:var(--neon)}
 .t-input::placeholder{color:var(--muted);font-size:13px}
 .t-input.err{border-color:var(--danger)!important;animation:shake .3s ease}
@@ -415,6 +415,10 @@ async function advance(){
 
   // ─── SALVA/ATUALIZA NO BANCO A CADA RESPOSTA ───
   saveLeadToDatabase(data);
+
+  // Esconde painel enquanto bot "digita"
+  document.getElementById('textPanel').style.display='none';
+  document.getElementById('choicePanel').style.display='none';
 
   if(step < STEPS.length){
     const next = STEPS[step];
