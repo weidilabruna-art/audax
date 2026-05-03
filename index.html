@@ -123,16 +123,21 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Sora',
 .privacy{text-align:center;font-size:10px;color:var(--muted);padding:6px 0 2px}
 .privacy span{margin-right:4px}
 
-/* ── FINAL CARD (Raio-X) ── */
-.final-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;width:100%;animation:fadeUp .5s ease forwards;opacity:0}
-.final-tag{font-size:9px;font-weight:800;color:var(--neon);text-transform:uppercase;letter-spacing:2.5px;margin-bottom:10px}
-.final-headline{font-size:19px;font-weight:900;color:var(--text);line-height:1.3;margin-bottom:18px}
-.final-headline span{color:var(--neon)}
-.rx-row{display:flex;align-items:baseline;gap:14px;padding:10px 0;border-bottom:1px solid var(--border)}
-.rx-row:last-of-type{border-bottom:none}
-.rx-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;min-width:90px;flex-shrink:0}
-.rx-val{font-size:13.5px;font-weight:600;color:var(--text);word-break:break-word}
-.btn-wpp{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px;background:#25D366;color:#fff;font-size:14px;font-weight:800;font-family:'Sora',sans-serif;letter-spacing:.4px;border:none;border-radius:12px;cursor:pointer;text-decoration:none;transition:transform .15s,opacity .15s;margin-top:18px}
+/* ── FINAL CARD ── */
+.final-card{background:var(--card);border:2px solid var(--neon);border-radius:20px;padding:28px 20px 22px;width:100%;animation:fadeUp .5s ease forwards;opacity:0;text-align:center}
+.final-check{width:60px;height:60px;background:var(--neon);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+.final-check svg{width:28px;height:28px}
+.final-headline{font-size:20px;font-weight:900;color:var(--text);line-height:1.3;margin-bottom:12px}
+.final-sub{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:20px}
+.final-sub b{color:var(--neon);font-weight:700}
+.final-items{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;text-align:left}
+.final-item{display:flex;align-items:flex-start;gap:14px;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.final-num{width:28px;height:28px;background:var(--neon-bg);border:1px solid var(--neon);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--neon);flex-shrink:0}
+.final-item-txt{font-size:13.5px;color:var(--text);line-height:1.5}
+.final-item-txt b{color:var(--text);font-weight:700}
+.final-divider{border:none;border-top:1px solid var(--border);margin:4px 0 14px}
+.final-eta{font-size:12px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:18px;font-weight:600}
+.btn-wpp{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px;background:#25D366;color:#fff;font-size:14px;font-weight:800;font-family:'Sora',sans-serif;letter-spacing:.4px;border:none;border-radius:12px;cursor:pointer;text-decoration:none;transition:transform .15s,opacity .15s}
 .btn-wpp:hover{transform:scale(1.01);opacity:.93}
 .btn-wpp svg{width:22px;height:22px;flex-shrink:0}
 
@@ -172,7 +177,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Sora',
   </div>
   <div class="prog-wrap">
     <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
-    <div class="prog-txt" id="progTxt">0/10</div>
+    <div class="prog-txt" id="progTxt">0/9</div>
   </div>
 </div>
 
@@ -253,23 +258,18 @@ const STEPS = [
     botMsg: d => `Qual seu Instagram, <b>${fn(d.nome)}</b>? Assim nossa equipe já olha seu contexto <b>antes</b> da conversa.`
   },
   {
-    key:'empresa', type:'text', lbl:'NOME DA EMPRESA', ph:'Ex: Minha Empresa Ltda',
-    validate: v => v.trim().length < 2 ? 'Digite o nome da empresa.' : null,
-    botMsg: () => `Qual o nome da sua empresa?`
-  },
-  {
     key:'segmento', type:'choice', lbl:'SEGMENTO',
     opts:['Prestação de Serviços / Consultoria','Infoproduto / Mentoria','Negócio Local / Franquia','Medicina / Saúde / Estética','E-commerce / Loja Online','SaaS / Tecnologia','Agência','Indústria','Outro'],
-    botMsg: d => `<b>${d.empresa}</b> — anotado. Qual o segmento?`
+    botMsg: () => `Qual segmento do seu negócio?`
   },
   {
     key:'cargo', type:'choice', lbl:'CARGO',
-    opts:['Sócio ou Fundador','CEO / C-Level / Diretor','Head / Gerente de Marketing','Analista / Operacional','Freelancer / Autônomo','Outro'],
+    opts:['Sócio / Empresário','Gerente / Líder','Colaborador / Funcionário','Prestador de serviço / Freelancer'],
     reactMsg: v => {
-      const m = {'Sócio ou Fundador':'Perfil decisor — vou calibrar o diagnóstico nesse tom.','CEO / C-Level / Diretor':'Perfil estratégico — vou calibrar o diagnóstico nesse tom.','Head / Gerente de Marketing':'Perfil de gestão — foco em performance e resultado.','Analista / Operacional':'Perfil operacional — vou estruturar o diagnóstico com foco em processos.'};
+      const m = {'Sócio / Empresário':'Perfil decisor — vou calibrar o diagnóstico nesse tom.','Gerente / Líder':'Perfil de gestão — foco em performance e resultado.','Colaborador / Funcionário':'Perfil operacional — vou estruturar o diagnóstico com foco em processos.'};
       return m[v] || 'Anotado — vou calibrar o diagnóstico nesse tom.';
     },
-    botMsg: d => `Qual seu papel na <b>${d.empresa}</b>?`
+    botMsg: d => `Qual seu cargo, <b>${fn(d.nome)}</b>?`
   },
   {
     key:'faturamento', type:'choice', lbl:'FATURAMENTO',
@@ -339,9 +339,9 @@ function userMsg(text){
 
 // ─── PROGRESS ───
 function updateProgress(){
-  const pct = Math.round((step/10)*100);
+  const pct = Math.round((step/9)*100);
   document.getElementById('progFill').style.width = pct+'%';
-  document.getElementById('progTxt').textContent = step+'/10';
+  document.getElementById('progTxt').textContent = step+'/9';
 }
 
 // ─── SHOW PANELS ───
@@ -449,7 +449,7 @@ async function advance(){
   } else {
     // Final
     document.getElementById('bottom').style.display='none';
-    await botMsg(`${fn(data.nome)}, terminei de mapear seu perfil. Esse é o raio-x da sua operação hoje:`);
+    await botMsg(`${fn(data.nome)}, terminei de mapear seu perfil. Esse é o <b style="color:var(--neon)">raio-x</b> da sua operação hoje:`);
     // ─── ENVIA PRO CRM com todos os dados completos ───
     sendToCRM(data);
     renderRaioX();
@@ -460,39 +460,49 @@ function renderRaioX(){
   const chat = document.getElementById('chat');
   const n = fn(data.nome);
 
-  // Build final card — exact structure from provided code
-  const labels = [
-    ['nome','Nome'],['whatsapp','WhatsApp'],['email','E-mail'],
-    ['instagram','Instagram'],['empresa','Empresa'],['segmento','Segmento'],
-    ['cargo','Cargo'],['faturamento','Faturamento'],['gargalo','Gargalo'],['investimento','Investimento']
-  ];
-  let rows = '';
-  labels.forEach(([k,l])=>{
-    if(data[k]) rows += `<div class="rx-row"><span class="rx-lbl">${l}</span><span class="rx-val">${data[k].replace(/</g,'&lt;')}</span></div>`;
-  });
-
   const msg = encodeURIComponent(
     `Olá Rubens! Acabei de preencher o diagnóstico Audax.\n\n`+
     `Nome: ${data.nome||''}\nWhatsApp: ${data.whatsapp||''}\n`+
-    `Empresa: ${data.empresa||''}\nSegmento: ${data.segmento||''}\n`+
-    `Faturamento: ${data.faturamento||''}\nInvestimento: ${data.investimento||''}\n`+
-    `Gargalo: ${data.gargalo||''}`
+    `Segmento: ${data.segmento||''}\nCargo: ${data.cargo||''}\n`+
+    `Faturamento: ${data.faturamento||''}\nGargalo: ${data.gargalo||''}\n`+
+    `Investimento: ${data.investimento||''}`
   );
 
-  const row = document.createElement('div');
-  row.className = 'msg-row bot';
-  row.innerHTML = `
-    <img class="m-av" src="${AV}" alt="R" onerror="this.src='${FALLBACK_AV}'">
-    <div class="final-card" style="max-width:90%;flex:1">
-      <div class="final-tag">✦ Raio-X da Operação</div>
-      <div class="final-headline">Perfil mapeado com sucesso, <span>${n}</span> 🎯</div>
-      ${rows}
-      <a class="btn-wpp" href="https://wa.me/5500000000000?text=${msg}" target="_blank">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        Liberar meu diagnóstico gratuito
-      </a>
-    </div>`;
-  chat.appendChild(row);
+  const card = document.createElement('div');
+  card.className = 'final-card';
+  card.innerHTML = `
+    <div class="final-check">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <div class="final-headline">${n}, recebemos seu diagnóstico ✓</div>
+    <div class="final-sub">Um estrategista da <b>AUDAX</b> vai entrar em contato pelo WhatsApp <b>${data.whatsapp||''}</b> em <b>até 24h úteis</b>.</div>
+    <div class="final-items">
+      <div class="final-item">
+        <div class="final-num">1</div>
+        <div class="final-item-txt"><b>Análise aprofundada</b> do seu perfil e mercado</div>
+      </div>
+      <div class="final-item">
+        <div class="final-num">2</div>
+        <div class="final-item-txt"><b>Raio-X detalhado</b> com plano sob medida pra sua empresa</div>
+      </div>
+      <div class="final-item">
+        <div class="final-num">3</div>
+        <div class="final-item-txt"><b>Conversa estratégica</b> no WhatsApp com um especialista Audax</div>
+      </div>
+    </div>
+    <hr class="final-divider">
+    <div class="final-eta">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Responderemos em até 24h úteis
+    </div>
+    <a class="btn-wpp" href="https://wa.me/5500000000000?text=${msg}" target="_blank">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Pular fila e liberar meu diagnóstico gratuito
+    </a>
+  `;
+  chat.appendChild(card);
   chat.scrollTop = chat.scrollHeight;
 }
 
