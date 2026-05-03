@@ -45,7 +45,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Sora',
 .h-left{display:flex;align-items:center;gap:10px}
 .av-wrap{position:relative;width:40px;height:40px;flex-shrink:0}
 .av-wrap img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--neon)}
-.online-dot{position:absolute;bottom:1px;right:1px;width:9px;height:9px;background:#22c55e;border-radius:50%;border:2px solid var(--surface)}
+.online-dot{display:none}
 .agent-name{font-size:14px;font-weight:700}
 .agent-sub{font-size:11px;color:var(--muted);margin-top:1px}
 .agent-sub b{color:var(--neon);font-weight:700}
@@ -168,7 +168,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Sora',
     </div>
     <div>
       <div class="agent-name">Rubens Godoy</div>
-      <div class="agent-sub">Fundador <b>AUDAX</b> · <span>online agora</span></div>
+      <div class="agent-sub">Fundador <b>AUDAX</b></div>
     </div>
   </div>
   <div class="prog-wrap">
@@ -226,24 +226,26 @@ let selectedChoice = null;
 const STEPS = [
   {
     key:'nome', type:'text', lbl:'NOME COMPLETO', ph:'Digite seu nome e sobrenome...',
-    validate: v => {
-      const p = v.trim().split(/\s+/);
-      return (p.length < 2 || p.some(x=>x.length<2)) ? 'Digite nome e sobrenome completos.' : null;
-    },
+    validate: v => v.trim().length < 2 ? 'Digite seu nome para avançar.' : null,
     botMsg: () => `Pra começar, qual seu nome?`
   },
   {
     key:'whatsapp', type:'text', lbl:'WHATSAPP', ph:'(11) 99999-9999',
+    inputmode: 'numeric',
     mask: maskPhone,
     validate: v => {
       const d = v.replace(/\D/g,'');
-      return (d.length < 10 || d.length > 13) ? 'Digite um WhatsApp válido com DDD.' : null;
+      return d.length !== 11 ? 'Digite um WhatsApp válido com DDD (11 dígitos).' : null;
     },
     botMsg: d => `Prazer, <b>${fn(d.nome)}</b>. Me passa seu WhatsApp — é por onde nossa equipe vai te retornar.`
   },
   {
     key:'email', type:'text', lbl:'E-MAIL', ph:'seuemail@gmail.com',
-    validate: v => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) ? 'Digite um e-mail válido (ex: nome@gmail.com).' : null,
+    validate: v => {
+      const trimmed = v.trim();
+      const valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trimmed);
+      return !valid ? 'Digite um e-mail válido com @ e domínio (ex: nome@gmail.com).' : null;
+    },
     botMsg: d => `E seu e-mail, <b>${fn(d.nome)}</b>?`
   },
   {
@@ -292,7 +294,7 @@ const KEYS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 // ─── HELPERS ───
 function fn(name){ return name ? name.trim().split(/\s+/)[0] : ''; }
 function maskPhone(v){
-  let d = v.replace(/\D/g,'').slice(0,13);
+  let d = v.replace(/\D/g,'').slice(0,11);
   if(d.length > 2) d = '('+d.slice(0,2)+') '+d.slice(2);
   if(d.length > 10) d = d.slice(0,10)+'-'+d.slice(10);
   return d;
@@ -351,6 +353,7 @@ function showText(s){
   const inp = document.getElementById('tInput');
   inp.placeholder = s.ph;
   inp.value='';
+  inp.inputMode = s.inputmode || 'text';
   inp.classList.remove('err');
   document.getElementById('errMsg').textContent='';
   setTimeout(()=>inp.focus(),100);
