@@ -425,6 +425,8 @@ async function advance(){
     // Final
     document.getElementById('bottom').style.display='none';
     await botMsg(`${fn(data.nome)}, terminei de mapear seu perfil. Esse é o raio-x da sua operação hoje:`);
+    // ─── ENVIA PRO CRM com todos os dados completos ───
+    sendToCRM(data);
     renderRaioX();
   }
 }
@@ -537,6 +539,38 @@ async function saveLeadToDatabase(leadData) {
   } catch(e) {
     console.error('[Audax DB] Erro de rede:', e);
     return false;
+  }
+}
+
+// ─── WEBHOOK CRM ───
+const CRM_WEBHOOK = 'https://syfdblxfgkdebfowzgjd.supabase.co/functions/v1/webhook-receiver/25176efd-142f-48d8-abb7-a05ca93380ef';
+
+async function sendToCRM(leadData) {
+  // Só envia pro CRM quando tiver pelo menos nome e whatsapp
+  if (!leadData.nome || !leadData.whatsapp) return;
+  try {
+    const payload = {
+      nome:     leadData.nome     || null,
+      email:    leadData.email    || null,
+      telefone: leadData.whatsapp || null,
+      empresa:  leadData.empresa  || null,
+      // campos extras como observação
+      segmento:    leadData.segmento    || null,
+      cargo:       leadData.cargo       || null,
+      faturamento: leadData.faturamento || null,
+      gargalo:     leadData.gargalo     || null,
+      investimento:leadData.investimento|| null,
+      instagram:   leadData.instagram   || null
+    };
+    const res = await fetch(CRM_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) console.log('[Audax CRM] Lead enviado ao CRM ✅');
+    else console.error('[Audax CRM] Erro:', res.status, await res.text());
+  } catch(e) {
+    console.error('[Audax CRM] Erro de rede:', e);
   }
 }
 
