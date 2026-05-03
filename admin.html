@@ -478,45 +478,62 @@ document.getElementById('tInput').addEventListener('keydown', e=>{
 const SUPABASE_URL = 'https://pezrbffcoairpwprhjgo.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlenJiZmZjb2FpcnB3cHJoamdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NjAxMzcsImV4cCI6MjA5MzMzNjEzN30.9-OH0Rwabum_TRIl_6hgHzPtWHp0hNwLhth3a3xNEQ8';
 
-// ID único por sessão — gerado uma vez e reutilizado em todo o upsert
 const SESSION_ID = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+let _leadRowId = null;
 
 async function saveLeadToDatabase(leadData) {
   try {
     const payload = {
-      session_id:  SESSION_ID,
-      nome:        leadData.nome         || null,
-      whatsapp:    leadData.whatsapp     || null,
-      email:       leadData.email        || null,
-      instagram:   leadData.instagram    || null,
-      empresa:     leadData.empresa      || null,
-      segmento:    leadData.segmento     || null,
-      cargo:       leadData.cargo        || null,
-      faturamento: leadData.faturamento  || null,
-      gargalo:     leadData.gargalo      || null,
-      investimento:leadData.investimento || null
+      session_id:   SESSION_ID,
+      nome:         leadData.nome         || null,
+      whatsapp:     leadData.whatsapp     || null,
+      email:        leadData.email        || null,
+      instagram:    leadData.instagram    || null,
+      empresa:      leadData.empresa      || null,
+      segmento:     leadData.segmento     || null,
+      cargo:        leadData.cargo        || null,
+      faturamento:  leadData.faturamento  || null,
+      gargalo:      leadData.gargalo      || null,
+      investimento: leadData.investimento || null
     };
 
-    // Upsert: insere na primeira vez, atualiza nas seguintes (usando session_id como chave)
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
-      method: 'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        'apikey':        SUPABASE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_KEY,
-        'Prefer':        'resolution=merge-duplicates,return=minimal'
-      },
-      body: JSON.stringify(payload)
-    });
+    const headers = {
+      'Content-Type':  'application/json',
+      'apikey':        SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY
+    };
 
-    if (!res.ok) {
-      const err = await res.text();
-      console.error('[Audax DB] Erro Supabase:', res.status, err);
-      return false;
+    let res;
+
+    if (!_leadRowId) {
+      // PRIMEIRA VEZ: INSERT e guarda o id retornado
+      res = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
+        method: 'POST',
+        headers: { ...headers, 'Prefer': 'return=representation' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        const rows = await res.json();
+        if (rows && rows[0]) _leadRowId = rows[0].id;
+        console.log('[Audax DB] Lead criado', _leadRowId);
+        return true;
+      }
+    } else {
+      // ATUALIZACOES: PATCH pelo id
+      res = await fetch(`${SUPABASE_URL}/rest/v1/leads?id=eq.${_leadRowId}`, {
+        method: 'PATCH',
+        headers: { ...headers, 'Prefer': 'return=minimal' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        console.log('[Audax DB] Lead atualizado', _leadRowId);
+        return true;
+      }
     }
 
-    console.log('[Audax DB] Lead salvo/atualizado ✅', payload);
-    return true;
+    const err = await res.text();
+    console.error('[Audax DB] Erro Supabase:', res.status, err);
+    return false;
   } catch(e) {
     console.error('[Audax DB] Erro de rede:', e);
     return false;
