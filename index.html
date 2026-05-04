@@ -452,7 +452,7 @@ async function advance(){
   } else {
     // Final
     document.getElementById('bottom').style.display='none';
-    await botMsg(`${fn(data.nome)}, terminei de mapear seu perfil. Esse é o <b style="color:var(--neon)">raio-x</b> da sua operação hoje:`);
+    await botMsg(`${fn(data.nome)}, terminei de mapear seu perfil. Agora vamos montar o <b style="color:var(--neon)">raio-x</b> da sua operação.`);
     // ─── ENVIA PRO CRM com todos os dados completos ───
     sendToCRM(data);
     await sleep(2000);
@@ -481,7 +481,7 @@ function renderRaioX(){
       </svg>
     </div>
     <div class="final-headline">${n}, recebemos seu diagnóstico ✓</div>
-    <div class="final-sub">Um estrategista da <b>AUDAX</b> vai entrar em contato pelo WhatsApp <b>${data.whatsapp||''}</b> em <b>até 24h úteis</b>.</div>
+    <div class="final-sub">Um estrategista da <b>AUDAX</b> vai entrar em contato pelo WhatsApp <b>${data.whatsapp||''}</b> em <b>até 24h úteis e te entregar:</b>.</div>
     <div class="final-items">
       <div class="final-item">
         <div class="final-num">1</div>
